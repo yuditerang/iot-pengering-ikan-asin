@@ -47,6 +47,7 @@ refKelembaban.on('value', (snapshot) => {
 refStatus.on('value', (snapshot) => {
     systemStatus = snapshot.val() || "OFF";
     updateButtonUI();
+    manageTimer(); // <-- TAMBAHKAN BARIS INI (Agar timer otomatis di-refresh saat status berubah)
 });
 
 // Membaca Mode Ikan dari Firebase
@@ -124,4 +125,5 @@ function manageTimer() {
     } else {
         document.getElementById("valTimer").innerText = "00:00:00";
     }
+
 }
