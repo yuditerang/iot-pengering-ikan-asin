@@ -83,6 +83,23 @@ window.toggleSystem = function() {
         });
     }
 }
+
+// Update tampilan tombol menyesuaikan status
+function updateButtonUI() {
+    const btn = document.getElementById("btnPower");
+    const select = document.getElementById("pilihIkan");
+    
+    if (systemStatus === "ON") {
+        btn.innerText = "Hentikan Proses (OFF)";
+        btn.classList.add("off");
+        select.disabled = true; // Kunci pilihan saat sistem berjalan
+    } else {
+        btn.innerText = "Mulai Proses (ON)";
+        btn.classList.remove("off");
+        select.disabled = false;
+    }
+}
+
 // 6. LOGIKA TIMER DAN PERHITUNGAN GAS
 // (Catatan Peneliti: Ubah angka di bawah ini sesuai hasil kalibrasi gas Anda)
 const konsumsiGasPerDetik = {
@@ -134,48 +151,5 @@ function manageTimer() {
     }
 }
 
-// Update tampilan tombol menyesuaikan status
-function updateButtonUI() {
-    const btn = document.getElementById("btnPower");
-    const select = document.getElementById("pilihIkan");
-    
-    if (systemStatus === "ON") {
-        btn.innerText = "Hentikan Proses (OFF)";
-        btn.classList.add("off");
-        select.disabled = true; // Kunci pilihan saat sistem berjalan
-    } else {
-        btn.innerText = "Mulai Proses (ON)";
-        btn.classList.remove("off");
-        select.disabled = false;
-    }
-}
-
-// 6. LOGIKA TIMER (WAKTU LAMANYA OVEN BERJALAN)
-function manageTimer() {
-    clearInterval(timerInterval);
-    
-    if (systemStatus === "ON" && startTime > 0) {
-        timerInterval = setInterval(() => {
-            let now = Date.now();
-            let diff = now - startTime; // Selisih dalam milidetik
-
-            // Konversi ke Jam, Menit, Detik
-            let hours = Math.floor(diff / (1000 * 60 * 60));
-            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            // Format string dengan leading zero
-            let formattedTime = 
-                String(hours).padStart(2, '0') + ":" + 
-                String(minutes).padStart(2, '0') + ":" + 
-                String(seconds).padStart(2, '0');
-
-            document.getElementById("valTimer").innerText = formattedTime;
-        }, 1000); // Update setiap 1 detik
-    } else {
-        document.getElementById("valTimer").innerText = "00:00:00";
-    }
-
-}
 
 
