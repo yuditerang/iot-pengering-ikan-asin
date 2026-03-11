@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengering Ikan Asin IoT</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sistem Pengeringan Ikan Asin</h1>
+        <div class="date-display" id="dateDisplay">Memuat Tanggal...</div>
+
+        <div class="indicators">
+            <div class="card">
+                Suhu Ruang
+                <span id="valSuhu">0 &deg;C</span>
+            </div>
+            <div class="card">
+                Kelembaban
+                <span id="valKelembaban">0 %</span>
+            </div>
+            <div class="card">
+                Waktu Berjalan
+                <span id="valTimer">00:00:00</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="form-group">
+                <label for="pilihIkan">Mode Pengeringan (Pilih Jenis Ikan):</label>
+                <select id="pilihIkan">
+                    <option value="Ikan Bilis">Ikan Bilis</option>
+                    <option value="Ikan Tamban">Ikan Tamban</option>
+                    <option value="Sotong">Sotong</option>
+                </select>
+            </div>
+            <button id="btnPower" class="btn" onclick="toggleSystem()">Mulai Proses (ON)</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
