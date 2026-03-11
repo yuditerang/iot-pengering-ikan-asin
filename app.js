@@ -83,6 +83,56 @@ window.toggleSystem = function() {
         });
     }
 }
+// 6. LOGIKA TIMER DAN PERHITUNGAN GAS
+// (Catatan Peneliti: Ubah angka di bawah ini sesuai hasil kalibrasi gas Anda)
+const konsumsiGasPerDetik = {
+    "Ikan Bilis": 0.5,   // Contoh: butuh 0.5 gram gas per detik
+    "Ikan Tamban": 0.8,  // Contoh: butuh 0.8 gram gas per detik
+    "Sotong": 1.2        // Contoh: butuh 1.2 gram gas per detik
+};
+
+function manageTimer() {
+    clearInterval(timerInterval);
+    
+    if (systemStatus === "ON" && startTime > 0) {
+        timerInterval = setInterval(() => {
+            let now = Date.now();
+            let diff = now - startTime; // Selisih dalam milidetik
+
+            // --- BAGIAN MENGHITUNG WAKTU ---
+            let hours = Math.floor(diff / (1000 * 60 * 60));
+            let minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            // Format string dengan angka nol di depan
+            let formattedTime = 
+                String(hours).padStart(2, '0') + ":" + 
+                String(minutes).padStart(2, '0') + ":" + 
+                String(seconds).padStart(2, '0');
+
+            document.getElementById("valTimer").innerText = formattedTime;
+
+            // --- BAGIAN MENGHITUNG GAS ---
+            let totalDetik = Math.floor(diff / 1000); // Total waktu berjalan dalam detik
+            let modeAktif = document.getElementById("pilihIkan").value; // Cek mode yang sedang dipilih
+            let rateGas = konsumsiGasPerDetik[modeAktif] || 0; // Ambil nilai sesuai jenis ikan
+            
+            let gasTerpakai = totalDetik * rateGas; // Rumus: Detik x Konsumsi gas per detik
+
+            // Menampilkan data Gas (Jika lebih dari 1000 gram, ubah jadi Kg)
+            if(gasTerpakai >= 1000) {
+                document.getElementById("valGas").innerText = (gasTerpakai / 1000).toFixed(2) + " Kg";
+            } else {
+                document.getElementById("valGas").innerText = gasTerpakai.toFixed(1) + " Gram";
+            }
+
+        }, 1000); // Update tampilan setiap 1 detik
+    } else {
+        // Reset tampilan saat sistem dimatikan (OFF)
+        document.getElementById("valTimer").innerText = "00:00:00";
+        document.getElementById("valGas").innerText = "0 Gram";
+    }
+}
 
 // Update tampilan tombol menyesuaikan status
 function updateButtonUI() {
@@ -127,3 +177,4 @@ function manageTimer() {
     }
 
 }
+
