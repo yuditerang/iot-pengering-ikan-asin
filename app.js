@@ -73,17 +73,34 @@ window.toggleSystem = function() {
         db.ref('kontrol').update({
             status: "ON",
             mode: selectedMode,
-            startTime: Date.now() // Catat waktu mulai dalam ms
+            startTime: Date.now(), // Catat waktu mulai dalam milidetik
+            totalGasTerakhir: 0    // Reset data laporan sebelumnya menjadi 0 saat mulai baru
         });
     } else {
-        // Mematikan Sistem
+        // --- PROSES MENGHITUNG GAS AKHIR SEBELUM DIMATIKAN ---
+        let now = Date.now();
+        let diff = now - startTime; 
+        let totalDetik = Math.floor(diff / 1000); 
+        
+        let rateGas = 0;
+        if (selectedMode === "Ikan Bilis") {
+            rateGas = 0.5;
+        } else if (selectedMode === "Ikan Tamban") {
+            rateGas = 0.8;
+        } else if (selectedMode === "Sotong") {
+            rateGas = 1.2;
+        }
+
+        let totalGasSelesai = totalDetik * rateGas; // Hasil akhir gas yang terpakai
+
+        // Mematikan Sistem dan Menyimpan Laporan Gas ke Firebase
         db.ref('kontrol').update({
             status: "OFF",
-            startTime: 0
+            startTime: 0,
+            totalGasTerakhir: totalGasSelesai // <--- MENGIRIM DATA GAS KE FIREBASE
         });
     }
 }
-
 // Update tampilan tombol menyesuaikan status
 function updateButtonUI() {
     const btn = document.getElementById("btnPower");
@@ -150,6 +167,7 @@ function manageTimer() {
         document.getElementById("valGas").innerText = "0 Gram";
     }
 }
+
 
 
 
