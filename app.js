@@ -43,6 +43,35 @@ refKelembaban.on('value', (snapshot) => {
     document.getElementById("valKelembaban").innerText = (snapshot.val() || 0) + " %";
 });
 
+// Membaca Sudut Servo dan Menerjemahkan ke Status Panas
+refServo.on('value', (snapshot) => {
+    let sudut = snapshot.val() || 0;
+    document.getElementById("valServo").innerHTML = sudut + " &deg;";
+
+    let status = "Tertutup";
+    let warna = "#666"; // Abu-abu
+
+    // Logika Indikator (Asumsi maksimal servo 180 derajat)
+    // Silakan sesuaikan angka derajatnya dengan hasil defuzzifikasi Sugeno Anda
+    if (sudut > 0 && sudut <= 60) {
+        status = "Kurang Panas (Bukaan Sedikit)";
+        warna = "#ffc107"; // Kuning
+    } else if (sudut > 60 && sudut <= 120) {
+        status = "Lumayan Panas (Bukaan Setengah)";
+        warna = "#fd7e14"; // Oranye
+    } else if (sudut > 120) {
+        status = "Panas (Bukaan Full)";
+        warna = "#dc3545"; // Merah
+    } else {
+        status = "Tertutup";
+        warna = "#666";
+    }
+
+    let elStatus = document.getElementById("statusPanas");
+    elStatus.innerText = status;
+    elStatus.style.color = warna;
+});
+
 // Membaca Status ON/OFF dari Firebase untuk menyinkronkan Button
 refStatus.on('value', (snapshot) => {
     systemStatus = snapshot.val() || "OFF";
@@ -167,6 +196,7 @@ function manageTimer() {
         document.getElementById("valGas").innerText = "0 Gram";
     }
 }
+
 
 
 
