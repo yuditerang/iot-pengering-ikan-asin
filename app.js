@@ -33,6 +33,7 @@ const refKelembaban = db.ref('sensor/kelembaban');
 const refStatus = db.ref('kontrol/status');
 const refMode = db.ref('kontrol/mode');
 const refStartTime = db.ref('kontrol/startTime');
+const refServo = db.ref('sensor/servo');
 
 // 4. MEMBACA DATA DARI FIREBASE SECARA REALTIME
 refSuhu.on('value', (snapshot) => {
@@ -196,6 +197,7 @@ function manageTimer() {
         document.getElementById("valGas").innerText = "0 Gram";
     }
 }
+
 
 
 
