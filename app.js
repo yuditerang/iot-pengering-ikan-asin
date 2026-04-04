@@ -43,7 +43,6 @@ refSuhu.on('value', (snapshot) => {
 refKelembaban.on('value', (snapshot) => {
     document.getElementById("valKelembaban").innerText = (snapshot.val() || 0) + " %";
 });
-
 // Membaca Sudut Servo dan Menerjemahkan ke Status Panas
 refServo.on('value', (snapshot) => {
     let sudut = snapshot.val() || 0;
@@ -131,6 +130,7 @@ window.toggleSystem = function() {
         });
     }
 }
+
 // Update tampilan tombol menyesuaikan status
 function updateButtonUI() {
     const btn = document.getElementById("btnPower");
@@ -198,8 +198,27 @@ function manageTimer() {
     }
 }
 
+// ================= FUNGSI JAM REAL-TIME =================
+function jalankanJam() {
+    const waktuSekarang = new Date(); // Ambil waktu dari komputer/HP pengguna
+    
+    // Ambil Jam, Menit, Detik dan pastikan formatnya 2 digit (contoh: 09 bukan 9)
+    const jam = waktuSekarang.getHours().toString().padStart(2, '0');
+    const menit = waktuSekarang.getMinutes().toString().padStart(2, '0');
+    const detik = waktuSekarang.getSeconds().toString().padStart(2, '0');
 
+    // Gabungkan menjadi format HH:MM:SS
+    const formatJam = `${jam}:${menit}:${detik} WIB`;
 
+    // Cari elemen HTML dengan ID 'jam-realtime' dan ubah teksnya
+    const elemenJam = document.getElementById('jam-realtime');
+    if (elemenJam) {
+        elemenJam.innerText = formatJam;
+    }
+}
 
+// Jalankan fungsi satu kali langsung saat web dibuka
+jalankanJam();
 
-
+// Perintahkan web untuk memperbarui jam setiap 1000 milidetik (1 detik)
+setInterval(jalankanJam, 1000);
