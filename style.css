@@ -7,21 +7,24 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); /* Ini warna latar belakang barunya */
     color: var(--text-color);
     margin: 0;
     padding: 20px;
     display: flex;
     justify-content: center;
+    min-height: 100vh; /* Memastikan gradien menutupi seluruh layar bawah */
 }
 
 .container {
     max-width: 800px;
     width: 100%;
-    background: var(--card-bg);
+    background: rgba(255, 255, 255, 0.7); /* Putih transparan tembus pandang */
+    backdrop-filter: blur(10px); /* Efek kaca buram (Glassmorphism) */
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15); /* Bayangan sedikit ditebalkan */
+    border: 1px solid rgba(255,255,255,0.5); /* Garis tepi putih halus */
 }
 
 h1 {
@@ -46,13 +49,19 @@ h1 {
 }
 
 .card {
-    background: #e9ecef;
+    background: #ffffff; /* Kotak indikator putih bersih */
     padding: 20px;
     border-radius: 8px;
     text-align: center;
     font-size: 1.2em;
     font-weight: bold;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Bayangan melayang halus */
+    transition: transform 0.2s; /* Animasi saat kursor menyorot */
+}
+
+/* Tambahan kecil: Animasi saat kotak disentuh mouse */
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .card span {
