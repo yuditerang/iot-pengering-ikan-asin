@@ -1,4 +1,4 @@
-// 1. KONFIGURASI FIREBASE (GANTI DENGAN MILIK ANDA)
+
 const firebaseConfig = {
   apiKey: "AIzaSyBSGtR2EZmewdFvUrmiSCsvvr_syZx3ieo",
   authDomain: "pengering-ikan-asin-4210c.firebaseapp.com",
@@ -214,6 +214,52 @@ function jalankanJam() {
     const elemenJam = document.getElementById('jam-realtime');
     if (elemenJam) {
         elemenJam.innerText = formatJam;
+    }
+}
+// ================= FUNGSI MENAMPILKAN TABEL RIWAYAT =================
+const dbRiwayat = firebase.database().ref('history');
+
+dbRiwayat.on('value', (snapshot) => {
+    const tabelBody = document.getElementById('tabelRiwayat');
+    tabelBody.innerHTML = ''; // Kosongkan tabel sebelum diisi ulang agar tidak ganda
+
+    // Jika data riwayat kosong
+    if (!snapshot.exists()) {
+        tabelBody.innerHTML = '<tr><td colspan="5" style="padding: 15px; color: #777;">Belum ada data riwayat. Silakan nyalakan sistem.</td></tr>';
+        return;
+    }
+    snapshot.forEach((childSnapshot) => {
+        const data = childSnapshot.val();
+        
+        // Buat satu baris tabel baru (Tr)
+        const barisBaru = `
+            <tr style="border-bottom: 1px solid #eee; transition: background 0.3s;">
+                <td style="padding: 10px;">${data.waktu || '-'}</td>
+                <td style="padding: 10px;">${data.timer || '-'}</td>
+                <td style="padding: 10px; font-weight: bold; color: #e67e22;">${data.suhu || 0} °C</td>
+                <td style="padding: 10px; color: #2980b9;">${data.kelembaban || 0} %</td>
+                <td style="padding: 10px;">${data.servo || 0}°</td>
+            </tr>
+        `;
+        // Tambahkan baris tersebut dari URUTAN PALING ATAS (Data terbaru di atas)
+        tabelBody.insertAdjacentHTML('afterbegin', barisBaru);
+    });
+});
+
+// ================= FUNGSI HAPUS RIWAYAT (TOMBOL MERAH) =================
+function hapusRiwayat() {
+    // Tampilkan pesan konfirmasi (Mencegah terhapus tidak sengaja)
+    const konfirmasi = confirm("Apakah Anda yakin ingin menghapus SELURUH data riwayat? Data yang dihapus tidak dapat dikembalikan.");
+    
+    if (konfirmasi) {
+        // Hapus folder 'history' dari Firebase
+        firebase.database().ref('history').remove()
+            .then(() => {
+                alert("Data riwayat berhasil dihapus!");
+            })
+            .catch((error) => {
+                alert("Gagal menghapus data: " + error.message);
+            });
     }
 }
 
