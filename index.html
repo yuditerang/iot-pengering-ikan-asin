@@ -36,6 +36,28 @@
                 <div id="statusPanas" style="font-size: 16px; font-weight: normal; margin-top: 8px; color: #666;">Tertutup</div>
             </div>
         </div>
+        <div class="card" style="grid-column: 1 / -1; margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: #333;">Riwayat Pengeringan (Otomatis per Menit)</h3>
+                <button onclick="hapusRiwayat()" style="background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">🗑️ Hapus Riwayat</button>
+            </div>
+            
+            <div style="overflow-x: auto; max-height: 300px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                    <thead style="background-color: #3498db; color: white; position: sticky; top: 0;">
+                        <tr>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Waktu</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Lama Nyala</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Suhu (°C)</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Kelembaban (%)</th>
+                            <th style="padding: 10px; border: 1px solid #ddd;">Bukaan Gas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelRiwayat">
+                        </tbody>
+                </table>
+            </div>
+        </div>
 
         <div class="controls">
             <div class="form-group">
