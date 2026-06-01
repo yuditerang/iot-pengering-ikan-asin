@@ -47,23 +47,27 @@ refServo.on('value', (snapshot) => {
     let sudut = snapshot.val() || 0;
     document.getElementById("valServo").innerHTML = sudut + " &deg;";
 
-    let status = "Tertutup";
-    let warna = "#666"; // Abu-abu
+    let status, warna;
 
-    // Logika Indikator (Asumsi maksimal servo 180 derajat)
-    // Silakan sesuaikan angka derajatnya dengan hasil defuzzifikasi Sugeno Anda
-    if (sudut > 0 && sudut <= 60) {
-        status = "Kurang Panas (Bukaan Sedikit)";
-        warna = "#ffc107"; // Kuning
-    } else if (sudut > 60 && sudut <= 120) {
-        status = "Lumayan Panas (Bukaan Setengah)";
-        warna = "#fd7e14"; // Oranye
-    } else if (sudut > 120) {
-        status = "Panas (Bukaan Full)";
-        warna = "#dc3545"; // Merah
+    if (sudut <= 7) {
+        // C_NS — suhu sudah melebihi setpoint, api dikecilkan ke minimum
+        status = "Api Minimum (Suhu Melewati Target)";
+        warna  = "#666";       // Abu-abu
+    } else if (sudut <= 17) {
+        // Antara C_NS dan C_Z — suhu mendekati setpoint
+        status = "Api Kecil (Suhu Mendekati Target)";
+        warna  = "#ffc107";    // Kuning
+    } else if (sudut <= 30) {
+        // Sekitar C_Z hingga C_PS — suhu masih di bawah target
+        status = "Api Sedang (Suhu Di Bawah Target)";
+        warna  = "#fd7e14";    // Oranye
+    } else if (sudut <= 45) {
+        // Mendekati C_PB — suhu jauh di bawah target, api penuh
+        status = "Api Besar (Suhu Jauh Di Bawah Target)";
+        warna  = "#dc3545";    // Merah
     } else {
         status = "Tertutup";
-        warna = "#666";
+        warna  = "#666";
     }
 
     let elStatus = document.getElementById("statusPanas");
