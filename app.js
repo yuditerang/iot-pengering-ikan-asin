@@ -13,6 +13,11 @@ const firebaseConfig = {
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+function fmtDesimal(nilai, digit = 2) {
+    let n = Number(nilai);
+    return isNaN(n) ? (0).toFixed(digit) : n.toFixed(digit);
+}
  
 // 2. TAMPILAN HARI, TANGGAL, TAHUN
 function updateDate() {
@@ -43,7 +48,7 @@ const refMode      = db.ref('kontrol/mode');
 // 4. MEMBACA DATA SENSOR DARI FIREBASE SECARA REALTIME
  
 refSuhu.on('value', (snapshot) => {
-    document.getElementById("valSuhu").innerHTML = (snapshot.val() || 0) + " &deg;C";
+    document.getElementById("valSuhu").innerHTML = fmtDesimal(snapshot.val()) + " &deg;C";
 });
  
 refKelembaban.on('value', (snapshot) => {
