@@ -9,7 +9,7 @@ const firebaseConfig = {
   appId: "1:1072915752651:web:4dae86275f2e9bf6fadd4e",
   measurementId: "G-DBPJXDZZM5"
 };
- 
+
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -18,7 +18,16 @@ function fmtDesimal(nilai, digit = 2) {
     let n = Number(nilai);
     return isNaN(n) ? (0).toFixed(digit) : n.toFixed(digit);
 }
- 
+
+// Format angka gas jadi teks (dipakai di 2 tempat, disatukan biar konsisten)
+function fmtGas(gram) {
+    let g = Number(gram) || 0;
+    if (g >= 1000) {
+        return (g / 1000).toFixed(2) + " Kg";
+    }
+    return g.toFixed(1) + " Gram";
+}
+
 // 2. TAMPILAN HARI, TANGGAL, TAHUN
 function updateDate() {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -26,42 +35,36 @@ function updateDate() {
     document.getElementById("dateDisplay").innerText = today.toLocaleDateString('id-ID', options);
 }
 updateDate();
- 
+
 // 3. VARIABEL GLOBAL UNTUK SISTEM
 let systemStatus = "OFF";
- 
-// Konsumsi gas per detik per mode (gram/detik)
-const konsumsiGasPerDetik = {
-    "Ikan Bilis":  0.5,
-    "Ikan Tamban": 0.8,
-    "Sotong":      1.2
-};
- 
+
 // Referensi Database
 const refSuhu      = db.ref('sensor/suhu');
 const refKelembaban= db.ref('sensor/kelembaban');
 const refServo     = db.ref('sensor/servo');
 const refTimerOven = db.ref('sensor/timerOven'); // <-- Sumber timer dari Arduino
+const refGas       = db.ref('sensor/gas');       // <-- [BARU] Sumber gas dari Arduino
 const refStatus    = db.ref('kontrol/status');
 const refMode      = db.ref('kontrol/mode');
- 
+
 // 4. MEMBACA DATA SENSOR DARI FIREBASE SECARA REALTIME
- 
+
 refSuhu.on('value', (snapshot) => {
     document.getElementById("valSuhu").innerHTML = fmtDesimal(snapshot.val()) + " &deg;C";
 });
- 
+
 refKelembaban.on('value', (snapshot) => {
     document.getElementById("valKelembaban").innerText = (snapshot.val() || 0) + " %";
 });
- 
+
 // Membaca Sudut Servo — disesuaikan dengan konstanta Sugeno Arduino
 refServo.on('value', (snapshot) => {
     let sudut = snapshot.val() || 0;
     document.getElementById("valServo").innerHTML = sudut + " &deg;";
- 
+
     let status, warna;
- 
+
     if (sudut <= 7) {
         // C_NS — suhu sudah melebihi setpoint, api dikecilkan ke minimum
         status = "Api Minimum (Suhu Melewati Target)";
@@ -82,57 +85,54 @@ refServo.on('value', (snapshot) => {
         status = "Tertutup";
         warna  = "#666";
     }
- 
+
     let elStatus = document.getElementById("statusPanas");
     elStatus.innerText = status;
     elStatus.style.color = warna;
 });
- 
+
 // ===============================================================
-// 5. TIMER DAN GAS — SUMBER DATA DARI ARDUINO (timerOven)
+// 5. TIMER — SUMBER DATA DARI ARDUINO (timerOven)
 //    Tidak lagi menggunakan Date.now() browser agar sinkron dengan LCD
 // ===============================================================
 refTimerOven.on('value', (snapshot) => {
     let totalDetik = snapshot.val() || 0;
- 
+
     if (systemStatus !== "ON" || totalDetik <= 0) return;
- 
+
     // Hitung tampilan waktu dari detik Arduino
     let hours   = Math.floor(totalDetik / 3600);
     let minutes = Math.floor((totalDetik % 3600) / 60);
     let seconds = totalDetik % 60;
- 
+
     document.getElementById("valTimer").innerText =
         String(hours).padStart(2, '0')   + ":" +
         String(minutes).padStart(2, '0') + ":" +
         String(seconds).padStart(2, '0');
- 
-    // Hitung gas dari detik yang sama persis dengan Arduino
-    let modeAktif   = document.getElementById("pilihIkan").value;
-    let rateGas     = konsumsiGasPerDetik[modeAktif] || 0;
-    let gasTerpakai = totalDetik * rateGas;
- 
-    if (gasTerpakai >= 1000) {
-        document.getElementById("valGas").innerText =
-            (gasTerpakai / 1000).toFixed(2) + " Kg";
-    } else {
-        document.getElementById("valGas").innerText =
-            gasTerpakai.toFixed(1) + " Gram";
-    }
 });
- 
+
+// ===============================================================
+// [BARU] GAS — dibaca langsung dari 'sensor/gas', dihitung oleh ESP32.
+// Tidak ada rumus di sini lagi -> pasti identik dengan LCD alat.
+// ===============================================================
+refGas.on('value', (snapshot) => {
+    if (systemStatus !== "ON") return; // saat OFF, biarkan tampilan direset oleh refStatus
+    let gasTerpakai = snapshot.val() || 0;
+    document.getElementById("valGas").innerText = fmtGas(gasTerpakai);
+});
+
 // Membaca Status ON/OFF dari Firebase
 refStatus.on('value', (snapshot) => {
     systemStatus = snapshot.val() || "OFF";
     updateButtonUI();
- 
+
     // Reset tampilan timer dan gas saat sistem OFF
     if (systemStatus === "OFF") {
         document.getElementById("valTimer").innerText = "00:00:00";
         document.getElementById("valGas").innerText   = "0 Gram";
     }
 });
- 
+
 // Membaca Mode Ikan dari Firebase
 refMode.on('value', (snapshot) => {
     const mode = snapshot.val();
@@ -140,40 +140,30 @@ refMode.on('value', (snapshot) => {
         document.getElementById("pilihIkan").value = mode;
     }
 });
- 
+
 // 6. FUNGSI MENGENDALIKAN SISTEM (TOMBOL ON/OFF)
 window.toggleSystem = function() {
     const selectedMode = document.getElementById("pilihIkan").value;
- 
+
     if (systemStatus === "OFF") {
-        // Menyalakan Sistem
         db.ref('kontrol').update({
-            status:           "ON",
-            mode:             selectedMode,
-            startTime:        Date.now(),
-            totalGasTerakhir: 0
+            status:    "ON",
+            mode:      selectedMode,
+            startTime: Date.now()
         });
     } else {
-        // Hitung gas akhir dari timerOven Firebase sebelum dimatikan
-        db.ref('sensor/timerOven').once('value', (snap) => {
-            let totalDetik      = snap.val() || 0;
-            let rateGas         = konsumsiGasPerDetik[selectedMode] || 0;
-            let totalGasSelesai = totalDetik * rateGas;
- 
-            db.ref('kontrol').update({
-                status:           "OFF",
-                startTime:        0,
-                totalGasTerakhir: totalGasSelesai
-            });
+        db.ref('kontrol').update({
+            status:    "OFF",
+            startTime: 0
         });
     }
 };
- 
+
 // Update tampilan tombol menyesuaikan status
 function updateButtonUI() {
     const btn    = document.getElementById("btnPower");
     const select = document.getElementById("pilihIkan");
- 
+
     if (systemStatus === "ON") {
         btn.innerText = "Hentikan Proses (OFF)";
         btn.classList.add("off");
@@ -184,7 +174,7 @@ function updateButtonUI() {
         select.disabled = false;
     }
 }
- 
+
 // ================= FUNGSI JAM REAL-TIME =================
 function jalankanJam() {
     const waktuSekarang = new Date();
@@ -195,19 +185,19 @@ function jalankanJam() {
     const elemenJam = document.getElementById('jam-realtime');
     if (elemenJam) elemenJam.innerText = formatJam;
 }
- 
+
 // ================= FUNGSI MENAMPILKAN TABEL RIWAYAT =================
 const dbRiwayat = firebase.database().ref('history');
- 
+
 dbRiwayat.on('value', (snapshot) => {
     const tabelBody = document.getElementById('tabelRiwayat');
     tabelBody.innerHTML = '';
- 
+
     if (!snapshot.exists()) {
         tabelBody.innerHTML = '<tr><td colspan="5" style="padding: 15px; color: #777;">Belum ada data riwayat. Silakan nyalakan sistem.</td></tr>';
         return;
     }
- 
+
     snapshot.forEach((childSnapshot) => {
         const data = childSnapshot.val();
         const barisBaru = `
@@ -222,7 +212,7 @@ dbRiwayat.on('value', (snapshot) => {
         tabelBody.insertAdjacentHTML('afterbegin', barisBaru);
     });
 });
- 
+
 // ================= FUNGSI HAPUS RIWAYAT =================
 function hapusRiwayat() {
     const konfirmasi = confirm("Apakah Anda yakin ingin menghapus SELURUH data riwayat? Data yang dihapus tidak dapat dikembalikan.");
@@ -232,6 +222,6 @@ function hapusRiwayat() {
             .catch((error) => alert("Gagal menghapus data: " + error.message));
     }
 }
- 
+
 jalankanJam();
 setInterval(jalankanJam, 1000);
